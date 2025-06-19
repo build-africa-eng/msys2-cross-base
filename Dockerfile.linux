@@ -1,6 +1,7 @@
 # Dockerfile.linux
 # Base image for Linux hosts, providing a headless MSYS2-style environment.
-FROM msys2/base:20240104
+# Corrected to use the official image from GitHub Container Registry (ghcr.io).
+FROM ghcr.io/msys2/msys2-base:latest
 
 # Run pacman updates and install essential build tools.
 # The double 'Syuu' is intentional and follows MSYS2 best practices for major updates.
