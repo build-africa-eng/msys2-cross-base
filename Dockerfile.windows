@@ -1,17 +1,25 @@
-# Use Windows Server 2022 base
+# Dockerfile.windows
 FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
 SHELL ["cmd", "/S", "/C"]
 
-# Download and install MSYS2
-RUN curl -L -o msys2.exe https://github.com/msys2/msys2-installer/releases/latest/download/msys2-x86_64-20240104.exe && ^
-    start /wait msys2.exe install --root C:\msys64 --confirm-command && ^
-    del msys2.exe
+# Download MSYS2 installer and install it to C:\msys64
+RUN curl -L -o msys2-installer.exe https://github.com/msys2/msys2-installer/releases/latest/download/msys2-x86_64-20240104.exe && ^
+    msys2-installer.exe install --root C:\msys64 --confirm-command && ^
+    del msys2-installer.exe
 
-# Optional: Install packages using pacman
+# Switch to MSYS2 bash shell
 SHELL ["C:\\msys64\\usr\\bin\\bash.exe", "-lc"]
+
+# Run pacman updates and install packages
 RUN pacman -Syuu --noconfirm && \
     pacman -Syuu --noconfirm && \
-    pacman -S --noconfirm base-devel git zip unzip mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake
+    pacman -S --noconfirm \
+      base-devel \
+      git \
+      zip \
+      unzip \
+      mingw-w64-x86_64-toolchain \
+      mingw-w64-x86_64-cmake
 
 CMD ["C:\\msys64\\usr\\bin\\bash.exe", "-l"]
