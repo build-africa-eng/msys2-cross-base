@@ -4,31 +4,24 @@ services:
   devbox:
     image: africanfuture/devbox:latest
     container_name: devbox
-    privileged: true  # Required for Docker-in-Docker and GPU
+    privileged: true
     restart: unless-stopped
     tty: true
     stdin_open: true
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - DISPLAY=${DISPLAY:-:0}
       - DEBIAN_FRONTEND=noninteractive
-    volumes:
-      - devbox-data:/home/devuser  # User's home volume
-      - /var/run/docker.sock:/var/run/docker.sock  # Enable host Docker access
-      - .:/workspace  # Mount current project folder
     working_dir: /workspace
+    volumes:
+      - devbox-data:/home/devuser
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
-      - "3000:3000"   # Node.js/Next.js
-      - "8000:8000"   # Python/Flask/FastAPI
+      - "3000:3000"   # Next.js or frontend
+      - "8000:8000"   # Backend/Dev server
       - "5432:5432"   # PostgreSQL
       - "3306:3306"   # MySQL
       - "6379:6379"   # Redis
       - "27017:27017" # MongoDB
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
 
 volumes:
   devbox-data:
