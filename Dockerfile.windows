@@ -4,22 +4,29 @@ FROM mcr.microsoft.com/windows/servercore:ltsc2022
 # Use PowerShell as default shell
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-# Install zstd and extract MSYS2 to get bsdtar
-RUN curl.exe -L -o zstd.zip https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-v1.5.6-win64.zip ; \
+# Install zstd and extract bsdtar from MSYS2 package, then extract MSYS2
+RUN curl.exe -L -o zstd.zip https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-v1.5.7-win64.zip ; \
+    curl.exe -L -o bsdtar.pkg.tar.zst https://mirror.msys2.org/msys/x86_64/bsdtar-3.8.1-1-x86_64.pkg.tar.zst ; \
     curl.exe -L -o msys2.tar.zst https://github.com/msys2/msys2-installer/releases/download/2024-01-13/msys2-base-x86_64-20240113.tar.zst ; \
+    $bsdtarChecksum = 'e81f86ea6e486764f04e2e41013f6f96aa15fa5a096c3644ed153f6b9dfbb827' ; \
+    if ((Get-FileHash bsdtar.pkg.tar.zst -Algorithm SHA256).Hash -ne $bsdtarChecksum) { throw "Checksum mismatch for bsdtar.pkg.tar.zst" } ; \
+    $msys2Checksum = 'YOUR_SHA256_CHECKSUM_HERE' ; \
+    if ((Get-FileHash msys2.tar.zst -Algorithm SHA256).Hash -ne $msys2Checksum) { throw "Checksum mismatch for msys2.tar.zst" } ; \
     Expand-Archive -Path zstd.zip -DestinationPath C:\tools\zstd ; \
     $zstdPath = (Get-ChildItem -Recurse -Path C:\tools\zstd -Filter zstd.exe | Select-Object -First 1).FullName ; \
     if (-not $zstdPath) { throw "zstd.exe not found in C:\tools\zstd" } ; \
-    & $zstdPath -d msys2.tar.zst -o msys2.tar ; \
+    & $zstdPath -d bsdtar.pkg.tar.zst -o bsdtar.pkg.tar ; \
     New-Item -ItemType Directory -Path C:\temp ; \
-    tar.exe -xf msys2.tar -C C:\temp ; \
+    tar.exe -xf bsdtar.pkg.tar -C C:\temp ; \
     $bsdtarPath = (Get-ChildItem -Recurse -Path C:\temp -Filter bsdtar.exe | Select-Object -First 1).FullName ; \
-    if (-not $bsdtarPath) { throw "bsdtar.exe not found in MSYS2 tar" } ; \
+    if (-not $bsdtarPath) { throw "bsdtar.exe not found in bsdtar package" } ; \
     New-Item -ItemType Directory -Path C:\tools\tar ; \
     Move-Item -Path $bsdtarPath -Destination C:\tools\tar\bsdtar.exe ; \
     $tarPath = 'C:\tools\tar\bsdtar.exe' ; \
+    if (-not (Test-Path $tarPath)) { throw "bsdtar.exe not moved to C:\tools\tar" } ; \
+    & $zstdPath -d msys2.tar.zst -o msys2.tar ; \
     & $tarPath -xf msys2.tar -C C:\ ; \
-    Remove-Item msys2.tar.zst, msys2.tar, zstd.zip, C:\temp -Recurse -Force
+    Remove-Item bsdtar.pkg.tar.zst, bsdtar.pkg.tar, msys2.tar.zst, msys2.tar, zstd.zip, C:\temp -Recurse -Force
 
 # Switch to MSYS2 bash as default shell
 SHELL ["C:\\msys64\\usr\\bin\\bash.exe", "-lc"]
