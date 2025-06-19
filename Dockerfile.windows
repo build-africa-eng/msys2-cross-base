@@ -1,19 +1,24 @@
-
 # Dockerfile.windows
 FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
-SHELL ["cmd", "/S", "/C"]
+# Add PowerShell to the path for easier commands
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-# Download, install, and clean up MSYS2 in a single RUN instruction
-RUN curl -LO https://github.com/msys2/msys2-installer/releases/latest/download/msys2-x86_64-20240104.exe && ^msys2-x86_64-20240104.exe install --root C:\msys64 --confirm-command && ^del msys2-x86_64-20240104.exe
+# Download and extract MSYS2 from the tar archive
+RUN curl.exe -L -o msys2.tar.zst https://github.com/msys2/msys2-installer/releases/download/2024-01-13/msys2-base-x86_64-20240113.tar.zst; `tar.exe -I zstd -xf msys2.tar.zst -C C:\; `Remove-Item msys2.tar.zst
 
 # Switch shell to MSYS2 bash
 SHELL ["C:\\msys64\\usr\\bin\\bash.exe", "-lc"]
 
-# Update and install packages
-RUN pacman -Syuu --noconfirm && \
+# Perform a one-time initialization and update the system
+# This step is crucial after a tarball installation
+RUN pacman-key --init && \
+    pacman-key --populate msys2 && \
     pacman -Syuu --noconfirm && \
-    pacman -S --noconfirm \
+    pacman -Syuu --noconfirm
+
+# Install development packages
+RUN pacman -S --noconfirm \
       base-devel \
       git \
       zip \
