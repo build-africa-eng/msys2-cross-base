@@ -22,8 +22,8 @@ RUN curl.exe -L -o zstd.zip https://github.com/facebook/zstd/releases/download/v
     Move-Item -Path $bsdtarPath -Destination C:\tools\tar\bsdtar.exe ; \
     $tarPath = 'C:\tools\tar\bsdtar.exe' ; \
     if (-not (Test-Path $tarPath)) { throw "bsdtar.exe not moved to C:\tools\tar" } ; \
-    & $zstdPath -d msys2.tar.zst -o msys2.tar ; \
     & $tarPath -xf msys2.tar -C C:\ ; \
+    if (-not (Test-Path C:\msys64\usr\bin\bash.exe)) { throw "MSYS2 bash.exe not found at C:\msys64\usr\bin\bash.exe" } ; \
     Remove-Item bsdtar.pkg.tar.zst, bsdtar.pkg.tar, msys2.tar.zst, msys2.tar, zstd.zip, C:\temp -Recurse -Force
 
 # Switch to MSYS2 bash as default shell
