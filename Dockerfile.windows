@@ -1,27 +1,17 @@
-# Dockerfile.windows
-# Requires a Windows host with container support enabled (Windows Server with Hyper-V or Process isolation)
+# Use Windows Server 2022 base
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
-FROM stefanscherer/msys2:latest
+SHELL ["cmd", "/S", "/C"]
 
-# Use MSYS2 bash as default shell
+# Download and install MSYS2
+RUN curl -L -o msys2.exe https://github.com/msys2/msys2-installer/releases/latest/download/msys2-x86_64-20240104.exe && ^
+    start /wait msys2.exe install --root C:\msys64 --confirm-command && ^
+    del msys2.exe
+
+# Optional: Install packages using pacman
 SHELL ["C:\\msys64\\usr\\bin\\bash.exe", "-lc"]
+RUN pacman -Syuu --noconfirm && \
+    pacman -Syuu --noconfirm && \
+    pacman -S --noconfirm base-devel git zip unzip mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake
 
-# Keep Docker alive and visible during build
-RUN echo "Starting MSYS2 update and toolchain installation..."
-
-# Update MSYS2 and install common tools
-RUN pacman -Syuu --noconfirm || true && \
-    pacman -Syuu --noconfirm || true && \
-    pacman -S --noconfirm --needed \
-      base-devel \
-      git \
-      zip \
-      unzip \
-      mingw-w64-x86_64-toolchain \
-      mingw-w64-x86_64-cmake
-
-# Final dummy echo to ensure build completion step is logged
-RUN echo "MSYS2 Windows base image setup complete."
-
-# Default command: interactive MSYS2 bash
 CMD ["C:\\msys64\\usr\\bin\\bash.exe", "-l"]
