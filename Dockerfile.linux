@@ -1,19 +1,24 @@
 # Dockerfile.linux
-# Base image for Linux hosts, providing a headless MSYS2-style environment.
-# Corrected to use the official image from GitHub Container Registry (ghcr.io).
-FROM ghcr.io/msys2/msys2-base:latest
+# A public, reliable base image for Linux using Arch Linux.
+# Arch Linux is the foundation of MSYS2 and provides the same tooling.
+FROM archlinux:latest
 
-# Run pacman updates and install essential build tools.
-# The double 'Syuu' is intentional and follows MSYS2 best practices for major updates.
-RUN pacman -Syuu --noconfirm && \
-    pacman -Syuu --noconfirm && \
-    pacman -S --noconfirm \
+# On a fresh Arch image, we must initialize the pacman keyring
+# before we can install packages. Then, update the system.
+RUN pacman-key --init && \
+    pacman-key --populate archlinux && \
+    pacman -Syu --noconfirm
+
+# Install the exact same development tools for cross-compilation.
+# Note: 'mingw-w64-cmake' is an MSYS2-specific package name. On Arch,
+# we install the standard 'cmake' and the 'mingw-w64-toolchain'.
+RUN pacman -S --noconfirm \
       base-devel \
       git \
       zip \
       unzip \
-      mingw-w64-x86_64-toolchain \
-      mingw-w64-x86_64-cmake
+      mingw-w64-toolchain \
+      cmake
 
 # Set the default command to a bash shell.
-CMD ["/usr/bin/bash"]
+CMD ["/bin/bash"]
