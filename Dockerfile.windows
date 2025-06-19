@@ -1,0 +1,20 @@
+# Dockerfile.windows
+# This requires a Windows host with container support enabled.
+FROM stefanscherer/msys2:latest
+
+# Set the default shell to MSYS2's bash for subsequent RUN commands.
+SHELL ["C:\\msys64\\usr\\bin\\bash.exe", "-lc"]
+
+# Run pacman updates and install essential build tools.
+RUN pacman -Syuu --noconfirm && \
+    pacman -Syuu --noconfirm && \
+    pacman -S --noconfirm \
+      base-devel \
+      git \
+      zip \
+      unzip \
+      mingw-w64-x86_64-toolchain \
+      mingw-w64-x86_64-cmake
+
+# Set the default command to launch an interactive bash shell.
+CMD ["C:\\msys64\\usr\\bin\\bash.exe", "-l"]
