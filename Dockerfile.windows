@@ -6,9 +6,10 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
 # Install zstd and bsdtar, extract MSYS2 from tar.zst
 RUN curl.exe -L -o zstd.zip https://github.com/facebook/zstd/releases/download/v1.5.6/zstd-v1.5.6-win64.zip ; \
-    curl.exe -L -o bsdtar.zip https://github.com/libarchive/libarchive/releases/download/v3.7.2/libarchive-3.7.2.zip ; \
+    curl.exe -L -o bsdtar.exe http://gnuwin32.sourceforge.net/downlinks/libarchive-bin.php ; \
     Expand-Archive -Path zstd.zip -DestinationPath C:\tools\zstd ; \
-    Expand-Archive -Path bsdtar.zip -DestinationPath C:\tools\tar ; \
+    New-Item -ItemType Directory -Path C:\tools\tar ; \
+    Move-Item -Path bsdtar.exe -Destination C:\tools\tar\bsdtar.exe ; \
     $zstdPath = (Get-ChildItem -Recurse -Path C:\tools\zstd -Filter zstd.exe | Select-Object -First 1).FullName ; \
     if (-not $zstdPath) { throw "zstd.exe not found in C:\tools\zstd" } ; \
     $tarPath = (Get-ChildItem -Recurse -Path C:\tools\tar -Filter bsdtar.exe | Select-Object -First 1).FullName ; \
@@ -19,7 +20,7 @@ RUN curl.exe -L -o zstd.zip https://github.com/facebook/zstd/releases/download/v
     if ($actualChecksum -ne $expectedChecksum) { throw "Checksum mismatch for msys2.tar.zst" } ; \
     & $zstdPath -d msys2.tar.zst -o msys2.tar ; \
     & $tarPath -xf msys2.tar -C C:\ ; \
-    Remove-Item msys2.tar.zst, msys2.tar, zstd.zip, bsdtar.zip -Force
+    Remove-Item msys2.tar.zst, msys2.tar, zstd.zip -Force
 
 # Switch to MSYS2 bash as default shell
 SHELL ["C:\\msys64\\usr\\bin\\bash.exe", "-lc"]
