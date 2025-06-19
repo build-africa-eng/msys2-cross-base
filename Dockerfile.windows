@@ -1,30 +1,23 @@
-# Use the official Windows Server Core 2022 image as the base.
 FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
-# Set the default shell to PowerShell for the initial setup steps.
-# $ErrorActionPreference = 'Stop' ensures that the build fails immediately if a command errors out.
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-# Download the MSYS2 tarball and extract it.
-# This command is now on a single line to avoid PowerShell parsing issues with backticks.
-# Commands are separated by semicolons.
-# We also use the more explicit '--use-compress-program' flag for tar.
-RUN curl.exe -L -o msys2.tar.zst https://github.com/msys2/msys2-installer/releases/download/2024-01-13/msys2-base-x86_64-20240113.tar.zst; tar.exe --use-compress-program=zstd -xf msys2.tar.zst -C C:\; Remove-Item msys2.tar.zst -Force
+# Download MSYS2 archive and zstd binary, decompress, and extract
+RUN curl.exe -L -o msys2.tar.zst https://github.com/msys2/msys2-installer/releases/download/2024-01-13/msys2-base-x86_64-20240113.tar.zst ; `
+    curl.exe -L -o zstd.exe https://github.com/facebook/zstd/releases/download/v1.5.5/zstd.exe ; `
+    .\zstd.exe -d msys2.tar.zst -o msys2.tar ; `
+    tar.exe -xf msys2.tar -C C:\ ; `
+    Remove-Item msys2.tar.zst, msys2.tar, zstd.exe -Force
 
-# Switch the shell to the newly installed MSYS2 bash.
-# The '-lc' flags ensure it runs as a login shell, loading the correct environment profiles.
+# Switch to MSYS2 bash shell
 SHELL ["C:\\msys64\\usr\\bin\\bash.exe", "-lc"]
 
-# Perform the critical one-time initialization and update of the MSYS2 environment.
-# This is required after installing from a tarball to set up package signing keys and get the latest updates.
-# Running it twice (`Syuu`) is the recommended practice to handle core system package updates first.
+# Initialize MSYS2 and install packages
 RUN pacman-key --init && \
     pacman-key --populate msys2 && \
     pacman -Syuu --noconfirm && \
-    pacman -Syuu --noconfirm
-
-# Install the necessary development packages using the pacman package manager.
-RUN pacman -S --noconfirm \
+    pacman -Syuu --noconfirm && \
+    pacman -S --noconfirm \
       base-devel \
       git \
       zip \
@@ -32,5 +25,4 @@ RUN pacman -S --noconfirm \
       mingw-w64-x86_64-toolchain \
       mingw-w64-x86_64-cmake
 
-# Set the default command for the container to launch an interactive MSYS2 bash shell.
 CMD ["C:\\msys64\\usr\\bin\\bash.exe", "-l"]
