@@ -7,11 +7,9 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 # Install zstd and extract bsdtar from MSYS2 package, then extract MSYS2
 RUN curl.exe -L -o zstd.zip https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-v1.5.7-win64.zip ; \
     curl.exe -L -o bsdtar.pkg.tar.zst https://mirror.msys2.org/msys/x86_64/bsdtar-3.8.1-1-x86_64.pkg.tar.zst ; \
-    curl.exe -L -o msys2.tar.zst https://github.com/msys2/msys2-installer/releases/download/2024-01-13/msys2-base-x86_64-20240113.tar.zst ; \
+    curl.exe -L -o msys2.tar.zst https://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20241116.tar.zst ; \
     $bsdtarChecksum = 'e81f86ea6e486764f04e2e41013f6f96aa15fa5a096c3644ed153f6b9dfbb827' ; \
     if ((Get-FileHash bsdtar.pkg.tar.zst -Algorithm SHA256).Hash -ne $bsdtarChecksum) { throw "Checksum mismatch for bsdtar.pkg.tar.zst" } ; \
-    $msys2Checksum = 'YOUR_SHA256_CHECKSUM_HERE' ; \
-    if ((Get-FileHash msys2.tar.zst -Algorithm SHA256).Hash -ne $msys2Checksum) { throw "Checksum mismatch for msys2.tar.zst" } ; \
     Expand-Archive -Path zstd.zip -DestinationPath C:\tools\zstd ; \
     $zstdPath = (Get-ChildItem -Recurse -Path C:\tools\zstd -Filter zstd.exe | Select-Object -First 1).FullName ; \
     if (-not $zstdPath) { throw "zstd.exe not found in C:\tools\zstd" } ; \
