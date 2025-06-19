@@ -1,28 +1,36 @@
+# Use official Windows Server Core 2022 base image
 FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
+# Use PowerShell as default shell
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-# Download MSYS2 archive and zstd binary, decompress, and extract
-RUN curl.exe -L -o msys2.tar.zst https://github.com/msys2/msys2-installer/releases/download/2024-01-13/msys2-base-x86_64-20240113.tar.zst ; `
-    curl.exe -L -o zstd.exe https://github.com/facebook/zstd/releases/download/v1.5.5/zstd.exe ; `
-    .\zstd.exe -d msys2.tar.zst -o msys2.tar ; `
-    tar.exe -xf msys2.tar -C C:\ ; `
-    Remove-Item msys2.tar.zst, msys2.tar, zstd.exe -Force
+# Install zstd and bsdtar, extract MSYS2 from tar.zst
+RUN curl.exe -L -o zstd.zip https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-v1.5.5-win64.zip ; `
+    curl.exe -L -o bsdtar.zip https://github.com/libarchive/libarchive/releases/download/v3.6.2/libarchive-3.6.2.zip ; `
+    Expand-Archive -Path zstd.zip -DestinationPath C:\tools\zstd ; `
+    Expand-Archive -Path bsdtar.zip -DestinationPath C:\tools\tar ; `
+    curl.exe -L -o msys2.tar.zst https://github.com/msys2/msys2-installer/releases/download/2024-01-13/msys2-base-x86_64-20240113.tar.zst ; `
+    C:\tools\zstd\zstd.exe -d msys2.tar.zst -o msys2.tar ; `
+    C:\tools\tar\libarchive-3.6.2\bsdtar.exe -xf msys2.tar -C C:\ ; `
+    Remove-Item msys2.tar.zst, msys2.tar, zstd.zip, bsdtar.zip -Force
 
-# Switch to MSYS2 bash shell
+# Switch to MSYS2 bash as default shell
 SHELL ["C:\\msys64\\usr\\bin\\bash.exe", "-lc"]
 
-# Initialize MSYS2 and install packages
+# Initialize MSYS2 and update packages
 RUN pacman-key --init && \
     pacman-key --populate msys2 && \
     pacman -Syuu --noconfirm && \
-    pacman -Syuu --noconfirm && \
-    pacman -S --noconfirm \
-      base-devel \
-      git \
-      zip \
-      unzip \
-      mingw-w64-x86_64-toolchain \
-      mingw-w64-x86_64-cmake
+    pacman -Syuu --noconfirm
 
+# Install essential build tools
+RUN pacman -S --noconfirm \
+    base-devel \
+    git \
+    zip \
+    unzip \
+    mingw-w64-x86_64-toolchain \
+    mingw-w64-x86_64-cmake
+
+# Default to interactive MSYS2 bash shell
 CMD ["C:\\msys64\\usr\\bin\\bash.exe", "-l"]
