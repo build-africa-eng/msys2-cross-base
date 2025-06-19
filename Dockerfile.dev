@@ -28,8 +28,10 @@ RUN apt-get update && apt-get install -y \
     nvidia-cuda-toolkit \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Enable Corepack for modern Node.js project tooling
-RUN npm install -g corepack && corepack enable
+# Install latest stable Node.js (includes Corepack)
+RUN curl -fsSL https://deb.nodesource.com/setup_current.x | sudo -E bash - && \
+    apt-get install -y nodejs && \
+    corepack enable
 
 # Create a non-root dev user
 RUN useradd -ms /bin/bash devuser && echo "devuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
