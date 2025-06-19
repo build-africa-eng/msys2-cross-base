@@ -1,47 +1,50 @@
-# syntax=docker/dockerfile:1.5
-FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
+# Base image with CUDA support (Ubuntu 22.04 base)
+FROM nvidia/cuda:12.3.1-base-ubuntu22.04
 
-# Set noninteractive frontend
+# Set noninteractive mode for apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Add MongoDB repository
-RUN apt-get update && apt-get install -y curl gnupg2 ca-certificates lsb-release \
-  && curl -fsSL https://pgp.mongodb.com/server-7.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server.gpg \
-  && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/mongodb-server.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" > /etc/apt/sources.list.d/mongodb-org-7.0.list
-
-# Install developer tools and language stacks
+# Update and install all core tools, compilers, interpreters
 RUN apt-get update && apt-get install -y \
-    sudo unzip zip git wget nano software-properties-common \
+    # Essentials
+    sudo unzip zip git wget curl nano lsb-release software-properties-common ca-certificates gnupg2 \
     build-essential cmake ninja-build pkg-config \
+    # Python
     python3 python3-pip python3-venv \
+    # PHP
     php php-cli php-mbstring php-xml php-curl \
+    # Java
     openjdk-17-jdk maven \
+    # Go
     golang \
+    # C / C++
     clang gcc g++ \
+    # .NET SDK
     apt-transport-https \
     dotnet-sdk-7.0 aspnetcore-runtime-7.0 \
+    # JS + Corepack (pnpm/yarn)
     nodejs npm \
-    postgresql-client mysql-client \
-    redis-tools mongodb-mongosh \
+    # DB clients
+    postgresql-client mysql-client redis-tools mongodb-mongosh \
+    # Docker tools
     docker.io docker-compose \
+    # GPU tools
     nvidia-cuda-toolkit \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Yarn (optional for Node.js)
-RUN corepack enable
+# Install Node.js LTS with Corepack support
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && corepack enable
 
-# Add user
-ARG USERNAME=devuser
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME -s /bin/bash \
-    && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
+# Set default shell
+SHELL ["/bin/bash", "-c"]
 
-# Docker-in-Docker support
-RUN dockerd & sleep 3 || true
-
-# Set default user
-USER $USERNAME
+# Set working directory
 WORKDIR /workspace
+
+# Allow Docker socket mounting (optional for docker-in-docker support)
+VOLUME ["/var/run/docker.sock"]
+
+# Default entrypoint
+CMD ["bash"]
