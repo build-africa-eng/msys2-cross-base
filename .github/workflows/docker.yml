@@ -10,16 +10,15 @@ build-windows:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push (Windows)
+      - name: Build image (Windows)
         run: |
-          docker build -f Dockerfile.windows -t africanfuture/msys2-base:windows -t africanfuture/msys2-base:windows-latest .
+          $env:DOCKER_BUILDKIT = "0"
+          docker build --isolation=process -f Dockerfile.windows -t africanfuture/msys2-base:windows .
+        shell: powershell
+
+      - name: Push image (Windows)
+        run: |
+          docker tag africanfuture/msys2-base:windows africanfuture/msys2-base:windows-latest
           docker push africanfuture/msys2-base:windows
           docker push africanfuture/msys2-base:windows-latest
-
-      - name: Capture build output (Windows)
-        if: failure()
-        run: |
-          $buildOutput = docker build -f Dockerfile.windows -t africanfuture/msys2-base:windows . 2>&1
-          $buildOutput | Out-File -FilePath build.log
-          Get-Content build.log
         shell: powershell
