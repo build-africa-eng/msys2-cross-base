@@ -33,7 +33,7 @@ jobs:
             africanfuture/msys2-base:linux-latest
 
   build-windows:
-    runs-on: windows-2022
+    runs-on: windows-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
