@@ -4,7 +4,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG C.UTF-8
 
-# System setup
+# Install system dependencies and language toolchains
 RUN apt-get update && apt-get install -y \
     sudo unzip zip git wget curl nano lsb-release gnupg2 ca-certificates software-properties-common \
     build-essential cmake ninja-build pkg-config \
@@ -15,21 +15,28 @@ RUN apt-get update && apt-get install -y \
     clang gcc g++ \
     apt-transport-https \
     dotnet-sdk-7.0 aspnetcore-runtime-7.0 \
-    postgresql-client mysql-client redis-tools mongodb-mongosh \
+    postgresql-client mysql-client redis-tools \
     docker.io docker-compose \
     nvidia-cuda-toolkit \
     libgl1-mesa-glx libx11-dev \
     ca-certificates gnupg \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js LTS + Corepack (yarn, pnpm)
+# Add MongoDB apt repo and install mongosh (latest)
+RUN curl -fsSL https://pgp.mongodb.com/server-6.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server.gpg && \
+    echo "deb [ arch=amd64 signed-by=/usr/share/keyrings/mongodb-server.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list && \
+    apt-get update && \
+    apt-get install -y mongodb-mongosh && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js LTS and Corepack
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     corepack enable && \
     corepack prepare yarn@stable --activate && \
     corepack prepare pnpm@latest --activate
 
-# Add a non-root user for development
+# Add dev user
 ARG USERNAME=devuser
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -41,8 +48,4 @@ RUN groupadd --gid $USER_GID $USERNAME && \
 
 USER $USERNAME
 WORKDIR /home/$USERNAME
-
-# Setup dev environment
-RUN mkdir -p /home/$USERNAME/projects
-
 CMD [ "bash" ]
