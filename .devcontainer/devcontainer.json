@@ -17,5 +17,5 @@
     "formulahendry.code-runner",
     "mhutchie.git-graph"
   ],
-  "postCreateCommand": "echo 'Welcome to MSYS2 Full DevBox!'"
+  "postCreateCommand": "/bin/bash .devcontainer/setup.sh"
 }
