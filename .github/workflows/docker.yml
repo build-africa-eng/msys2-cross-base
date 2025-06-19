@@ -32,7 +32,9 @@ jobs:
             africanfuture/msys2-base:linux-latest
           platforms: linux/amd64
 
+  # Windows build is currently disabled until compatible VM or host is ready
   build-windows:
+    if: false  # Set to false to skip this job for now
     runs-on: windows-latest
     steps:
       - name: Checkout repository
