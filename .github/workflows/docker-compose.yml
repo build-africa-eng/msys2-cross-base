@@ -5,13 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: msys2-devbox
-    runtime: nvidia
-    environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - DEBIAN_FRONTEND=noninteractive
+    image: africanfuture/devbox:latest
+    container_name: devbox
     volumes:
       - .:/workspace
       - /var/run/docker.sock:/var/run/docker.sock
     tty: true
     stdin_open: true
+    runtime: nvidia  # Enable GPU if supported
