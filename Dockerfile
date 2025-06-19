@@ -13,8 +13,8 @@ ARG TARGETPLATFORM
 
 # The following lines are placeholders for a multi-stage build.
 # 'docker buildx' uses the platform flag to select which stage to execute.
-FROM your-dockerhub-africanfuture/msys2-base:linux AS linux
-FROM your-dockerhub-africanfuture/msys2-base:windows AS windows
+FROM africanfuture/msys2-base:linux AS linux
+FROM africanfuture/msys2-base:windows AS windows
 
 # This file primarily serves as a reference for a manifest build.
 # When building with 'docker build --platform=linux/amd64 .', it would target the 'linux' stage.
