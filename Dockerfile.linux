@@ -1,0 +1,18 @@
+# Dockerfile.linux
+# Base image for Linux hosts, providing a headless MSYS2-style environment.
+FROM msys2/base:20240104
+
+# Run pacman updates and install essential build tools.
+# The double 'Syuu' is intentional and follows MSYS2 best practices for major updates.
+RUN pacman -Syuu --noconfirm && \
+    pacman -Syuu --noconfirm && \
+    pacman -S --noconfirm \
+      base-devel \
+      git \
+      zip \
+      unzip \
+      mingw-w64-x86_64-toolchain \
+      mingw-w64-x86_64-cmake
+
+# Set the default command to a bash shell.
+CMD ["/usr/bin/bash"]
