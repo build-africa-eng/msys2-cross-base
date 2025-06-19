@@ -7,8 +7,12 @@ RUN Invoke-WebRequest -Uri "https://github.com/msys2/msys2-installer/releases/la
     Start-Process -FilePath .\msys2.exe -ArgumentList "-y" -Wait; \
     Remove-Item msys2.exe
 
-# Update MSYS2 and install MinGW-w64
-RUN C:\msys64\usr\bin\bash -c "pacman -Syu --noconfirm && pacman -S mingw-w64-x86_64-gcc --noconfirm"
+# Initialize MSYS2 environment and update
+RUN powershell -Command "Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force; \
+    & C:\\msys64\\usr\\bin\\bash -c 'pacman-key --init; pacman-key --populate msys2; pacman -Syu --noconfirm'"
+
+# Install MinGW-w64
+RUN C:\\msys64\\usr\\bin\\bash -c "pacman -S mingw-w64-x86_64-gcc --noconfirm"
 
 # Set working directory
 WORKDIR /mys
