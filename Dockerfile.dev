@@ -1,0 +1,39 @@
+# Base image
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# System setup
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    curl gnupg2 ca-certificates lsb-release unzip zip git wget sudo \
+    build-essential cmake ninja-build pkg-config \
+    python3 python3-pip python3-venv \
+    php php-cli php-mbstring php-xml php-curl \
+    openjdk-17-jdk \
+    golang \
+    clang gcc g++ \
+    dotnet-sdk-7.0 aspnetcore-runtime-7.0 \
+    nodejs npm \
+    postgresql-client mysql-client \
+    redis-tools mongodb-clients \
+    docker.io docker-compose \
+    nvidia-cuda-toolkit \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Node.js + Next.js setup
+RUN npm install -g yarn pnpm npx serve vercel next
+
+# Python packages
+RUN pip3 install --upgrade pip setuptools wheel \
+    && pip3 install jupyterlab black pylint flask django fastapi uvicorn
+
+# Add developer user
+RUN useradd -ms /bin/bash dev && echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+USER dev
+WORKDIR /home/dev
+
+# Docker-in-Docker socket support
+VOLUME ["/var/run/docker.sock"]
+
+CMD [ "bash" ]
