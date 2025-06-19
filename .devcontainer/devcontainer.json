@@ -1,43 +1,21 @@
 {
-  "name": "Full DevBox",
-  "image": "africanfuture/devbox:latest",
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:1": {}
-  },
-  "runArgs": [
-    "--privileged",
-    "--init",
-    "--network=host"
-  ],
-  "containerEnv": {
-    "POSTGRES_PASSWORD": "devpass",
-    "MYSQL_ROOT_PASSWORD": "devpass",
-    "MONGO_INITDB_ROOT_USERNAME": "admin",
-    "MONGO_INITDB_ROOT_PASSWORD": "devpass"
-  },
-  "mounts": [
-    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
-  ],
+  "name": "MSYS2 Full DevBox",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "devbox",
   "workspaceFolder": "/workspace",
-  "postCreateCommand": "bash /workspace/.devcontainer/setup.sh",
-  "remoteUser": "vscode",
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "ms-azuretools.vscode-docker",
-        "ms-vscode.cpptools",
-        "ms-dotnettools.csharp",
-        "esbenp.prettier-vscode",
-        "eamodio.gitlens",
-        "formulahendry.code-runner",
-        "dbaeumer.vscode-eslint",
-        "mhutchie.git-graph"
-      ],
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash",
-        "editor.formatOnSave": true
-      }
-    }
-  }
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "python.defaultInterpreterPath": "/usr/bin/python3"
+  },
+  "extensions": [
+    "ms-python.python",
+    "esbenp.prettier-vscode",
+    "ms-azuretools.vscode-docker",
+    "golang.Go",
+    "ms-vscode.cpptools",
+    "ms-dotnettools.csharp",
+    "formulahendry.code-runner",
+    "mhutchie.git-graph"
+  ],
+  "postCreateCommand": "echo 'Welcome to MSYS2 Full DevBox!'"
 }
