@@ -30,6 +30,7 @@ jobs:
           tags: |
             africanfuture/msys2-base:linux
             africanfuture/msys2-base:linux-latest
+          platforms: linux/amd64
 
   build-windows:
     runs-on: windows-latest
@@ -39,6 +40,16 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          # Use a compatible BuildKit image for Windows
+          buildkitd-config: |
+            [registry."docker.io"]
+              mirrors = ["mirror.gcr.io"]
+            [worker.oci]
+              enabled = false
+            [worker.containerd]
+              enabled = true
+              snapshotter = "windows"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -55,6 +66,9 @@ jobs:
           tags: |
             africanfuture/msys2-base:windows
             africanfuture/msys2-base:windows-latest
+          platforms: windows/amd64
+          # Optional: Specify a compatible BuildKit image if needed
+          # buildkitd-flags: "--allow-insecure-entitlement security.insecure"
 
       - name: Capture build output (Windows)
         if: failure()
