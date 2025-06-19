@@ -37,6 +37,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -56,8 +59,6 @@ jobs:
       - name: Capture build output (Windows)
         if: failure()
         run: |
-          # Redirect build output to a log file during the build step (if needed)
-          # Note: docker/build-push-action doesn't output to a file by default, so this is a fallback
           $buildOutput = docker build -f Dockerfile.windows -t africanfuture/msys2-base:windows . 2>&1
           $buildOutput | Out-File -FilePath build.log
           Get-Content build.log
