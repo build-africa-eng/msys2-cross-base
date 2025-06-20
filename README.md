@@ -17,5 +17,4 @@ A powerful all-in-one development container built with Docker, supporting:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/build-africa-eng/msys2-cross-base.git
-   cd msys2-cross-base
+   git clone https://github.com/build-africa-eng/devbox.git
